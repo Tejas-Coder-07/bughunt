@@ -1,0 +1,61 @@
+:root {
+  --bg: #05070d;
+  --bg2: #0a0f1a;
+  --panel: rgba(10, 16, 28, 0.82);
+  --edge: rgba(57, 255, 136, 0.18);
+  --green: #39ff88;
+  --cyan: #22d3ee;
+  --red: #ff4d6d;
+  --yellow: #ffd166;
+  --purple: #b388ff;
+  --text: #d7e3f4;
+  --muted: #7a8aa3;
+  --mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+  --sans: 'Space Grotesk', system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { background: var(--bg); color: var(--text); font-family: var(--mono); }
+body { min-height: 100vh; min-height: 100dvh; }
+button { font-family: inherit; }
+
+.matrix { position: fixed; inset: 0; opacity: 0.2; z-index: 0; pointer-events: none; }
+.vignette { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 40%, transparent 0%, rgba(5,7,13,.55) 60%, rgba(5,7,13,.95) 100%); }
+.scanlines { position: fixed; inset: 0; pointer-events: none; z-index: 50;
+  background: repeating-linear-gradient(to bottom, rgba(255,255,255,.03) 0 1px, transparent 1px 3px); }
+.fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 60; }
+
+/* Glitch text */
+.glitch { position: relative; font-family: var(--mono); font-weight: 800; color: var(--green);
+  text-shadow: 0 0 18px rgba(57,255,136,.55), 0 0 2px rgba(57,255,136,.9); line-height: 1; }
+.glitch::before, .glitch::after { content: attr(data-text); position: absolute; inset: 0; pointer-events: none; }
+.glitch::before { color: var(--cyan); animation: glitchA 2.8s infinite steps(1); clip-path: inset(0 0 100% 0); }
+.glitch::after  { color: var(--red);  animation: glitchB 3.3s infinite steps(1); clip-path: inset(0 0 100% 0); }
+@keyframes glitchA {
+  0%, 88%, 100% { transform: none; clip-path: inset(0 0 100% 0); }
+  89% { transform: translate(-4px, -1px); clip-path: inset(8% 0 60% 0); }
+  92% { transform: translate(3px, 1px);  clip-path: inset(45% 0 30% 0); }
+  95% { transform: translate(-2px, 0);   clip-path: inset(72% 0 6% 0); }
+}
+@keyframes glitchB {
+  0%, 84%, 100% { transform: none; clip-path: inset(0 0 100% 0); }
+  85% { transform: translate(4px, 1px);  clip-path: inset(60% 0 12% 0); }
+  88% { transform: translate(-3px, -1px); clip-path: inset(20% 0 55% 0); }
+  91% { transform: translate(2px, 0);    clip-path: inset(2% 0 80% 0); }
+}
+
+/* Syntax colours */
+.t-kw  { color: #ff79c6; }
+.t-str { color: #f1fa8c; }
+.t-num { color: #bd93f9; }
+.t-com { color: #6b7a90; font-style: italic; }
+.t-fn  { color: #8be9fd; }
+.t-pp  { color: #ffb86c; }
+
+@keyframes blink { 50% { opacity: 0; } }
+.caret { display: inline-block; width: .6em; height: 1.1em; background: var(--green); vertical-align: -0.15em; animation: blink 1s steps(1) infinite; margin-left: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001s !important; animation-iteration-count: 1 !important; transition: none !important; }
+}

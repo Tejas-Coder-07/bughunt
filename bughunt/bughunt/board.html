@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bug Hunt · Leaderboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css">
+<style>
+  html, body { height: 100%; overflow: hidden; }
+  .wrap { position: relative; z-index: 1; height: 100vh; display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.25fr);
+    gap: 3.5vw; padding: 4.5vh 4vw 11vh; }
+
+  /* LEFT */
+  .left { display: flex; flex-direction: column; justify-content: center; gap: 2.4vh; min-width: 0; }
+  .club { color: var(--cyan); font-size: clamp(12px, 1.5vh, 20px); letter-spacing: .4em; text-transform: uppercase; }
+  h1.glitch { font-size: clamp(44px, 9vh, 120px); letter-spacing: -.04em; }
+  .tag { font: 500 clamp(15px, 2.4vh, 30px) var(--sans); color: var(--text); }
+  .tag b { color: var(--yellow); }
+  .qrzone { display: flex; align-items: center; gap: 2.2vw; margin-top: 1vh; }
+  .qr-frame { position: relative; padding: 1.6vh; background: #fff; border-radius: 2vh; flex: none;
+    box-shadow: 0 0 0 3px var(--green), 0 0 70px rgba(57,255,136,.4); animation: breathe 3s ease-in-out infinite; }
+  @keyframes breathe { 50% { box-shadow: 0 0 0 3px var(--green), 0 0 110px rgba(57,255,136,.6); } }
+  #qr { line-height: 0; }
+  #qr img, #qr canvas { display: block; }
+  .scanline { position: absolute; left: 1vh; right: 1vh; height: 4px; border-radius: 4px; background: var(--green);
+    box-shadow: 0 0 18px 4px rgba(57,255,136,.7); animation: scan 2.4s ease-in-out infinite alternate; opacity: .85; }
+  @keyframes scan { from { top: 8%; } to { top: 90%; } }
+  .corner { position: absolute; width: 3.2vh; height: 3.2vh; border: 4px solid var(--cyan); }
+  .c1 { top: -1.4vh; left: -1.4vh; border-right: 0; border-bottom: 0; border-radius: 10px 0 0 0; }
+  .c2 { top: -1.4vh; right: -1.4vh; border-left: 0; border-bottom: 0; border-radius: 0 10px 0 0; }
+  .c3 { bottom: -1.4vh; left: -1.4vh; border-right: 0; border-top: 0; border-radius: 0 0 0 10px; }
+  .c4 { bottom: -1.4vh; right: -1.4vh; border-left: 0; border-top: 0; border-radius: 0 0 10px 0; }
+  .scanhow { display: flex; flex-direction: column; gap: 1.4vh; min-width: 0; flex: 1; }
+  .step { font-size: clamp(13px, 2vh, 26px); color: var(--text); }
+  .step b { color: var(--green); margin-right: .5em; }
+  .url { font-size: clamp(11px, 1.6vh, 20px); color: var(--cyan); word-break: break-all; opacity: .9; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1vw; }
+  .stat { padding: 1.6vh 1vw; border-radius: 1.4vh; background: var(--panel); border: 1px solid rgba(255,255,255,.07); }
+  .stat b { display: block; font: 800 clamp(20px, 4vh, 52px) var(--mono); color: #fff; line-height: 1.1; }
+  .stat span { font-size: clamp(9px, 1.3vh, 15px); color: var(--muted); letter-spacing: .2em; text-transform: uppercase; }
+
+  /* RIGHT */
+  .right { display: flex; flex-direction: column; min-width: 0; min-height: 0; background: rgba(8,13,24,.78); border: 1px solid var(--edge);
+    border-radius: 2.4vh; padding: 3vh 2vw 2vh; backdrop-filter: blur(10px);
+    box-shadow: 0 30px 80px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.04); }
+  .rhead { display: flex; align-items: center; gap: 1vw; margin-bottom: 2vh; }
+  .rhead h2 { font: 700 clamp(18px, 3.6vh, 46px) var(--sans); color: #fff; letter-spacing: -.01em; }
+  .rhead .prompt { color: var(--green); font-family: var(--mono); }
+  .pill { margin-left: auto; display: inline-flex; align-items: center; gap: .6em; font-size: clamp(10px, 1.5vh, 18px); padding: .5em 1em; border-radius: 999px;
+    border: 1px solid rgba(57,255,136,.4); color: var(--green); background: rgba(57,255,136,.08); letter-spacing: .15em; }
+  .pill i { width: .7em; height: .7em; border-radius: 50%; background: currentColor; box-shadow: 0 0 10px currentColor; animation: blink 1.2s steps(1) infinite; }
+  .pill.demo { color: var(--yellow); border-color: rgba(255,209,102,.4); background: rgba(255,209,102,.08); }
+  .pill.off { color: var(--red); border-color: rgba(255,77,109,.4); background: rgba(255,77,109,.08); }
+  .cols { display: grid; grid-template-columns: 6vw 1fr 7vw 9vw; gap: 1vw; padding: 0 1.4vw 1vh; font-size: clamp(9px, 1.3vh, 15px); color: var(--muted); letter-spacing: .2em; text-transform: uppercase; }
+  .cols span:last-child { text-align: right; }
+  #list { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; gap: .9vh; }
+  .row { display: grid; grid-template-columns: 6vw 1fr 7vw 9vw; gap: 1vw; align-items: center; flex: 1; max-height: 7.2vh;
+    padding: 0 1.4vw; border-radius: 1.4vh; background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.05);
+    font-size: clamp(14px, 3.1vh, 40px); will-change: transform; }
+  .row .rk { font-weight: 800; color: var(--muted); }
+  .row .nm { color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+  .row .md { font-size: .5em; justify-self: start; padding: .35em .8em; border-radius: 999px; border: 1px solid rgba(255,255,255,.14); color: var(--muted); letter-spacing: .1em; }
+  .row .md.py { color: var(--yellow); border-color: rgba(255,209,102,.4); }
+  .row .md.c { color: var(--cyan); border-color: rgba(34,211,238,.4); }
+  .row .md.mix { color: var(--purple); border-color: rgba(179,136,255,.4); }
+  .row .sc { text-align: right; font-weight: 800; color: var(--green); font-variant-numeric: tabular-nums; }
+  .row.r1 { background: linear-gradient(90deg, rgba(255,209,102,.22), rgba(255,209,102,.03)); border-color: rgba(255,209,102,.55); box-shadow: 0 0 40px -10px rgba(255,209,102,.5); }
+  .row.r1 .rk, .row.r1 .sc { color: var(--yellow); }
+  .row.r2 { background: linear-gradient(90deg, rgba(215,227,244,.14), rgba(215,227,244,.02)); border-color: rgba(215,227,244,.35); }
+  .row.r3 { background: linear-gradient(90deg, rgba(255,160,100,.16), rgba(255,160,100,.02)); border-color: rgba(255,160,100,.4); }
+  .row.empty { opacity: .28; }
+  .row.empty .nm { color: var(--muted); font-weight: 400; }
+  .waiting { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; color: var(--muted); font-size: clamp(14px, 2.4vh, 30px); pointer-events: none; }
+  .waiting b { color: var(--green); display: block; font-size: 1.6em; margin-bottom: .4em; }
+
+  /* Ticker */
+  .ticker { position: fixed; left: 0; right: 0; bottom: 0; height: 7vh; z-index: 2; display: flex; align-items: center; overflow: hidden;
+    background: rgba(5,7,13,.92); border-top: 1px solid var(--edge); font-size: clamp(12px, 2.2vh, 28px); }
+  .ticker .label { flex: none; height: 100%; display: flex; align-items: center; padding: 0 2vw; background: var(--green); color: #03140a; font-weight: 800; letter-spacing: .15em; z-index: 1; }
+  .ticker .track { display: flex; gap: 4vw; white-space: nowrap; padding-left: 3vw; animation: marquee 40s linear infinite; }
+  .ticker .track span b { color: var(--green); }
+  .ticker .track span em { color: var(--muted); font-style: normal; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* New leader overlay */
+  .announce { position: fixed; inset: 0; z-index: 55; display: grid; place-items: center; background: rgba(5,7,13,.78); backdrop-filter: blur(6px);
+    opacity: 0; pointer-events: none; transition: opacity .35s; }
+  .announce.on { opacity: 1; }
+  .announce .inner { text-align: center; transform: scale(.8); transition: transform .5s cubic-bezier(.2,1.4,.3,1); }
+  .announce.on .inner { transform: scale(1); }
+  .announce .crown { font-size: 12vh; }
+  .announce .t { font: 800 4vh var(--mono); color: var(--yellow); letter-spacing: .3em; }
+  .announce .n { font: 800 12vh var(--mono); color: #fff; text-shadow: 0 0 60px rgba(255,209,102,.7); line-height: 1.1; max-width: 90vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .announce .s { font: 700 5vh var(--mono); color: var(--green); }
+  .hint-key { position: fixed; top: 1.2vh; right: 1.2vw; z-index: 3; font-size: 11px; color: rgba(122,138,163,.5); }
+</style>
+</head>
+<body>
+<canvas id="matrix" class="matrix"></canvas>
+<div class="vignette"></div>
+<div class="scanlines"></div>
+
+<div class="wrap">
+  <section class="left">
+    <div class="club" id="club">OSCode CIT</div>
+    <h1 class="glitch" data-text="BUG_HUNT">BUG_HUNT</h1>
+    <div class="tag">Spot the bug. Beat the board. <b id="prize">Top scorer wins chocolate 🍫</b></div>
+    <div class="qrzone">
+      <div class="qr-frame"><div id="qr"></div>
+        <span class="corner c1"></span><span class="corner c2"></span><span class="corner c3"></span><span class="corner c4"></span></div>
+      <div class="scanhow">
+        <div class="step"><b>01</b>Scan with your phone camera</div>
+        <div class="step"><b>02</b>Pick a name &amp; a language</div>
+        <div class="step"><b>03</b>Tap the buggy line. 60s!</div>
+        <div class="url" id="url"></div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b id="stPlayers">0</b><span>hunters</span></div>
+      <div class="stat"><b id="stGames">0</b><span>games</span></div>
+      <div class="stat"><b id="stTop">0</b><span>top score</span></div>
+    </div>
+  </section>
+
+  <section class="right">
+    <div class="rhead"><h2><span class="prompt">&gt;</span> leaderboard</h2><span class="pill" id="pill"><i></i><span id="pillTxt">LIVE</span></span></div>
+    <div class="cols"><span>rank</span><span>hacker</span><span>lang</span><span>score</span></div>
+    <div id="list"><div class="waiting" id="waiting"><div><b>Waiting for the first hunter…</b>Scan the QR code to be #1</div></div></div>
+  </section>
+</div>
+
+<div class="ticker"><div class="label">LIVE</div><div class="track" id="track"><span>Scan the QR code to play Bug Hunt</span><span>Scan the QR code to play Bug Hunt</span></div></div>
+
+<div class="announce" id="announce"><div class="inner"><div class="crown">👑</div><div class="t">NEW #1</div><div class="n" id="annName"></div><div class="s" id="annScore"></div></div></div>
+<div class="hint-key" id="hintKey"></div>
+
+<script src="qrcode.js"></script>
+<script src="config.js"></script>
+<script src="api.js"></script>
+<script src="fx.js"></script>
+<script>
+(function () {
+  const C = BH.config;
+  const $ = s => document.querySelector(s);
+  FX.matrix($('#matrix'), { fps: 22, fontSize: 18 });
+  $('#club').textContent = C.CLUB_NAME || 'OSCode CIT';
+  if (C.PRIZE_TEXT) $('#prize').textContent = C.PRIZE_TEXT;
+
+  // ---------- QR ----------
+  let gameUrl = C.GAME_URL;
+  if (!gameUrl) gameUrl = location.protocol === 'file:' ? new URL('index.html', location.href).href : new URL('./', location.href).href;
+  $('#url').textContent = gameUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
+  function drawQR() {
+    const size = Math.round(Math.min(innerHeight * 0.3, innerWidth * 0.17));
+    const qr = qrcode(0, 'M'); qr.addData(gameUrl); qr.make();
+    $('#qr').innerHTML = qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+    const svg = $('#qr svg'); svg.setAttribute('width', size); svg.setAttribute('height', size);
+    svg.querySelectorAll('path').forEach(p => p.setAttribute('fill', '#05070d'));
+  }
+  drawQR();
+  let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(drawQR, 200); });
+
+  // ---------- status ----------
+  function status(state) {
+    const p = $('#pill');
+    p.className = 'pill' + (state === 'demo' ? ' demo' : state === 'off' ? ' off' : '');
+    $('#pillTxt').textContent = state === 'demo' ? 'DEMO MODE' : state === 'off' ? 'RECONNECTING' : 'LIVE';
+  }
+  if (!BH.live) $('#hintKey').textContent = 'demo mode · press R to clear scores';
+
+  // ---------- leaderboard ----------
+  const list = $('#list');
+  const modeLabel = m => m === 'py' ? 'PY' : m === 'c' ? 'C' : 'MIX';
+  let leaderId = null, first = true, lastScores = new Map();
+
+  function render(top) {
+    $('#waiting').style.display = top.length ? 'none' : '';
+    const before = new Map();
+    list.querySelectorAll('.row[data-id]').forEach(el => before.set(el.dataset.id, el.getBoundingClientRect().top));
+    const existing = new Map([...list.querySelectorAll('.row[data-id]')].map(el => [el.dataset.id, el]));
+    list.querySelectorAll('.row.empty').forEach(el => el.remove());
+
+    const els = top.map((r, i) => {
+      let el = existing.get(r.player_id);
+      if (el) existing.delete(r.player_id);
+      else { el = document.createElement('div'); el.dataset.id = r.player_id; }
+      el.className = 'row' + (i < 3 ? ' r' + (i + 1) : '');
+      const medal = ['🥇', '🥈', '🥉'][i] || String(i + 1).padStart(2, '0');
+      el.innerHTML = '<span class="rk">' + medal + '</span><span class="nm">' + BH.esc(r.name) + '</span>' +
+        '<span class="md ' + BH.esc(r.mode) + '">' + modeLabel(r.mode) + '</span><span class="sc">' + r.score + '</span>';
+      return el;
+    });
+    existing.forEach(el => el.remove());
+    els.forEach(el => list.appendChild(el));
+    for (let i = top.length; i < 10; i++) {
+      const e = document.createElement('div'); e.className = 'row empty';
+      e.innerHTML = '<span class="rk">' + String(i + 1).padStart(2, '0') + '</span><span class="nm">— open slot —</span><span></span><span class="sc">·</span>';
+      list.appendChild(e);
+    }
+
+    // FLIP animation for rank changes + flash for new/improved scores
+    els.forEach((el, i) => {
+      const id = el.dataset.id, r = top[i];
+      const was = before.get(id), now = el.getBoundingClientRect().top;
+      if (!first) {
+        if (was == null) el.animate([{ opacity: 0, transform: 'translateX(60px) scale(.96)' }, { opacity: 1, transform: 'none' }], { duration: 600, easing: 'cubic-bezier(.2,.8,.2,1)' });
+        else if (was !== now) el.animate([{ transform: 'translateY(' + (was - now) + 'px)' }, { transform: 'none' }], { duration: 700, easing: 'cubic-bezier(.2,.8,.2,1)' });
+        if (lastScores.has(id) && lastScores.get(id) !== r.score || was == null) {
+          el.animate([{ boxShadow: '0 0 0 2px #39ff88, 0 0 50px rgba(57,255,136,.8)', background: 'rgba(57,255,136,.25)' }, { boxShadow: '0 0 0 0 transparent' }], { duration: 1600, easing: 'ease-out' });
+        }
+      }
+      lastScores.set(id, r.score);
+    });
+
+    if (top[0]) {
+      if (!first && leaderId && top[0].player_id !== leaderId) announce(top[0]);
+      leaderId = top[0].player_id;
+    }
+    first = false;
+  }
+
+  let annT;
+  function announce(r) {
+    $('#annName').textContent = r.name;
+    $('#annScore').textContent = r.score + ' pts';
+    $('#announce').classList.add('on');
+    FX.confetti(220);
+    clearTimeout(annT); annT = setTimeout(() => $('#announce').classList.remove('on'), 3800);
+  }
+
+  let lastTicker = '';
+  function ticker(rows) {
+    if (!rows.length) return;
+    const items = rows.map(r => '<span>▸ <b>' + BH.esc(r.name) + '</b> scored ' + r.score + ' <em>[' + modeLabel(r.mode) + ']</em></span>').join('');
+    if (items === lastTicker) return;
+    lastTicker = items;
+    $('#track').innerHTML = items + items; // doubled for seamless loop
+  }
+
+  function countTo(el, v) {
+    const from = +el.textContent || 0; if (from === v) return;
+    const t0 = performance.now();
+    (function s(t) { const p = Math.min(1, (t - t0) / 700); el.textContent = Math.round(from + (v - from) * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(s); })(t0);
+  }
+
+  async function refresh() {
+    try {
+      const rows = await BH.all();
+      const best = BH.bestPerPlayer(rows);
+      render(best.slice(0, 10));
+      countTo($('#stPlayers'), best.length);
+      countTo($('#stGames'), rows.length);
+      countTo($('#stTop'), best[0] ? best[0].score : 0);
+      ticker(await BH.recent(10));
+      status(BH.live ? 'live' : 'demo');
+    } catch (e) { status('off'); }
+  }
+  refresh();
+  setInterval(refresh, C.REFRESH_MS || 3000);
+  // demo mode: update instantly when another tab saves a score
+  addEventListener('storage', e => { if (e.key === 'bh_demo_scores') refresh(); });
+
+  addEventListener('keydown', e => {
+    if (!BH.live && (e.key === 'r' || e.key === 'R') && confirm('Clear all demo scores?')) { BH.clearDemo(); location.reload(); }
+    if (e.key === 'f' || e.key === 'F') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }
+  });
+})();
+</script>
+</body>
+</html>
